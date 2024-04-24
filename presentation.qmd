@@ -1,0 +1,20 @@
+---
+title: Projeto de IC - Envelope Espectral de imagens SAR
+subtitle: "Desenvolvimento de medidas para caracterização de mudanças em séries temporais de imagens SAR com apoio de Aprendizado de Máquina"
+lang: pt-br
+format:
+    revealjs: 
+        theme: [simple, style.scss]
+        smaller: true
+author: 
+  - name: João Pedro Melani Saraiva
+    affiliations:
+      - ref: unesp 
+  - name: Rogério Galante Negri
+    affiliations:
+      - ref: unesp
+affiliations: 
+  - id: unesp
+    number: 1
+    name: Dep. de Engenharia Ambiental - ICT-Unesp
+---

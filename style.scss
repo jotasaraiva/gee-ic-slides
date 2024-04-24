@@ -1,0 +1,11 @@
+/*-- scss:defaults --*/
+
+$body-bg: #ffffe5;
+$body-color: #4e4747;
+$link-color: #42affa;
+
+/*-- scss:rules --*/
+
+.reveal.smaller .slides h1 {
+    font-size: calc(1.5em/0.7);
+}
