@@ -1,11 +1,19 @@
 /*-- scss:defaults --*/
 
-$body-bg: #ffffe5;
-$body-color: #4e4747;
-$link-color: #42affa;
+$body-bg: #ffffff;
+$body-color: #002855;
+$link-color: #002855;
 
 /*-- scss:rules --*/
 
 .reveal.smaller .slides h1 {
     font-size: calc(1.5em/0.7);
 }
+
+.reveal .slide-logo {
+    display: block;
+    position: fixed;
+    height: 15vh !important;
+    max-width: unset !important;
+    max-height: unset !important;
+  }

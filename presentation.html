@@ -7,7 +7,10 @@
 <link href="presentation_files/libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="presentation_files/libs/quarto-html/light-border.css" rel="stylesheet">
 <link href="presentation_files/libs/quarto-html/quarto-html.min.css" rel="stylesheet" data-mode="light">
-<link href="presentation_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+<link href="presentation_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="presentation_files/libs/quarto-contrib/reveal-header-1.0.0/add_header.js" defer="true"></script>
+<link href="presentation_files/libs/quarto-contrib/reveal-header-1.0.0/add_header.css" rel="stylesheet">
+<link href="presentation_files/libs/quarto-contrib/grid-htext-1.0.0/grid_htext.css" rel="stylesheet"><meta charset="utf-8">
   <meta name="generator" content="quarto-1.4.550">
 
   <meta name="author" content="João Pedro Melani Saraiva">
@@ -30,6 +33,71 @@
       margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
       vertical-align: middle;
     }
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      { color: #003b4f; background-color: #f1f3f5; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #003b4f; } /* Normal */
+    code span.al { color: #ad0000; } /* Alert */
+    code span.an { color: #5e5e5e; } /* Annotation */
+    code span.at { color: #657422; } /* Attribute */
+    code span.bn { color: #ad0000; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #003b4f; } /* ControlFlow */
+    code span.ch { color: #20794d; } /* Char */
+    code span.cn { color: #8f5902; } /* Constant */
+    code span.co { color: #5e5e5e; } /* Comment */
+    code span.cv { color: #5e5e5e; font-style: italic; } /* CommentVar */
+    code span.do { color: #5e5e5e; font-style: italic; } /* Documentation */
+    code span.dt { color: #ad0000; } /* DataType */
+    code span.dv { color: #ad0000; } /* DecVal */
+    code span.er { color: #ad0000; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #ad0000; } /* Float */
+    code span.fu { color: #4758ab; } /* Function */
+    code span.im { color: #00769e; } /* Import */
+    code span.in { color: #5e5e5e; } /* Information */
+    code span.kw { color: #003b4f; } /* Keyword */
+    code span.op { color: #5e5e5e; } /* Operator */
+    code span.ot { color: #003b4f; } /* Other */
+    code span.pp { color: #ad0000; } /* Preprocessor */
+    code span.sc { color: #5e5e5e; } /* SpecialChar */
+    code span.ss { color: #20794d; } /* SpecialString */
+    code span.st { color: #20794d; } /* String */
+    code span.va { color: #111111; } /* Variable */
+    code span.vs { color: #20794d; } /* VerbatimString */
+    code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   </style>
   <link rel="stylesheet" href="presentation_files/libs/revealjs/dist/theme/quarto.css">
   <link href="presentation_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
@@ -350,11 +418,182 @@ Rogério Galante Negri
 </div>
 
 </section>
-<section class="slide level2">
-
+<section id="introdução" class="slide level2">
+<h2>Introdução</h2>
+<ul>
+<li>Monitoramento ambiental e mudanças na superfície terrestre</li>
+<li>Sensoriamento Remoto</li>
+<li>Séries Temporais de Imagens de Satélites</li>
+<li>SAR (Synthetic Aperture Radar)</li>
+<li>Motivação: Imagens SAR são dados <em>raster</em> ruidosos, passíveis de análise espectral</li>
+</ul>
+</section>
+<section id="coleta-de-dados" class="slide level2">
+<h2>Coleta de dados</h2>
+<ul>
+<li>Utilizando Earth Engine API para Python</li>
+<li>Filtrando por área de interesse (ROI) e intervalo de tempo</li>
+<li>Estudo de caso: Intervalo de 12 meses, represa de Barra Bonita</li>
+<li>Seleção das bandas de visada vertical e visada horizontal para o cálculo da amplitude</li>
+</ul>
+</section>
+<section id="coleta-de-dados-1" class="slide level2">
+<h2>Coleta de dados</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href=""></a><span class="im">import</span> ee</span>
+<span id="cb1-2"><a href=""></a></span>
+<span id="cb1-3"><a href=""></a>coordenadas <span class="op">=</span> <span class="st">"-48.534679,-22.508117,-48.50481,-22.538879"</span></span>
+<span id="cb1-4"><a href=""></a>x1, y1, x2, y2 <span class="op">=</span> coordenadas.split(<span class="st">","</span>)</span>
+<span id="cb1-5"><a href=""></a></span>
+<span id="cb1-6"><a href=""></a>datas <span class="op">=</span> <span class="st">"2020-01-01,2020-12-31"</span></span>
+<span id="cb1-7"><a href=""></a>inicio, fim <span class="op">=</span> datas.split(<span class="st">","</span>)</span>
+<span id="cb1-8"><a href=""></a>escala <span class="op">=</span> <span class="dv">30</span></span>
+<span id="cb1-9"><a href=""></a>dummy_value <span class="op">=</span> <span class="dv">99999</span></span>
+<span id="cb1-10"><a href=""></a></span>
+<span id="cb1-11"><a href=""></a>geom <span class="op">=</span> ee.Geometry.Polygon([[[<span class="bu">float</span>(x1),<span class="bu">float</span>(y2)],</span>
+<span id="cb1-12"><a href=""></a>                             [<span class="bu">float</span>(x2),<span class="bu">float</span>(y2)],</span>
+<span id="cb1-13"><a href=""></a>                             [<span class="bu">float</span>(x2),<span class="bu">float</span>(y1)],</span>
+<span id="cb1-14"><a href=""></a>                             [<span class="bu">float</span>(x1),<span class="bu">float</span>(y1)],</span>
+<span id="cb1-15"><a href=""></a>                             [<span class="bu">float</span>(x1),<span class="bu">float</span>(y2)]]])</span>
+<span id="cb1-16"><a href=""></a></span>
+<span id="cb1-17"><a href=""></a></span>
+<span id="cb1-18"><a href=""></a>sentinel1 <span class="op">=</span> ee.ImageCollection(<span class="st">'COPERNICUS/S1_GRD'</span>)<span class="op">\</span></span>
+<span id="cb1-19"><a href=""></a>    .filterBounds(geom)<span class="op">\</span></span>
+<span id="cb1-20"><a href=""></a>    .filterDate(inicio,fim)<span class="op">\</span></span>
+<span id="cb1-21"><a href=""></a>    .<span class="bu">filter</span>(ee.Filter.listContains(<span class="st">'transmitterReceiverPolarisation'</span>, <span class="st">'VV'</span>))<span class="op">\</span></span>
+<span id="cb1-22"><a href=""></a>    .<span class="bu">filter</span>(ee.Filter.listContains(<span class="st">'transmitterReceiverPolarisation'</span>, <span class="st">'VH'</span>))<span class="op">\</span></span>
+<span id="cb1-23"><a href=""></a>    .<span class="bu">filter</span>(ee.Filter.eq(<span class="st">'instrumentMode'</span>, <span class="st">'IW'</span>))</span>
+<span id="cb1-24"><a href=""></a>    </span>
+<span id="cb1-25"><a href=""></a>v_emit_asc <span class="op">=</span> sentinel1.<span class="bu">filter</span>(ee.Filter.eq(<span class="st">'orbitProperties_pass'</span>, <span class="st">'ASCENDING'</span>))</span>
+<span id="cb1-26"><a href=""></a>v_emit_desc <span class="op">=</span> sentinel1.<span class="bu">filter</span>(ee.Filter.eq(<span class="st">'orbitProperties_pass'</span>, <span class="st">'DESCENDING'</span>))</span>
+<span id="cb1-27"><a href=""></a></span>
+<span id="cb1-28"><a href=""></a>image <span class="op">=</span> ee.Image(dummy_value).blend(v_emit_desc.<span class="bu">map</span>(pkg.add_amplitude).select(<span class="st">'amplitude'</span>).toBands())</span>
+<span id="cb1-29"><a href=""></a>image_names <span class="op">=</span> image.bandNames().getInfo()</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="processamento" class="slide level2">
+<h2>Processamento</h2>
+<ul>
+<li>Cálculo e extração de amplitude (distância euclidiana entre <strong>VV</strong> e <strong>VH</strong>)</li>
+<li>Extração da banda de amplitude da coleção de imagens, criando uma única imagem</li>
+<li>Transformação para <code>DataFrame</code> em formato <em>long</em> das bandas da imagem</li>
+</ul>
+<p><span class="math display">\[
+Amplitude = \sqrt{VV^2 + VH^2}
+\]</span></p>
+</section>
+<section id="processamento-1" class="slide level2">
+<h2>Processamento</h2>
+<ul>
+<li>Amplitude</li>
+</ul>
+<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href=""></a><span class="kw">def</span> add_amplitude(image, VV <span class="op">=</span> <span class="st">"VV"</span>, VH <span class="op">=</span> <span class="st">"VH"</span>):</span>
+<span id="cb2-2"><a href=""></a>    amplitude <span class="op">=</span> image<span class="op">\</span></span>
+<span id="cb2-3"><a href=""></a>        .expression(<span class="st">'(VV ** 2 + VH ** 2) ** (1 / 2)'</span>, {<span class="st">'VV'</span>:image.select(VV), <span class="st">'VH'</span>:image.select(VH)})<span class="op">\</span></span>
+<span id="cb2-4"><a href=""></a>        .rename(<span class="st">'amplitude'</span>)</span>
+<span id="cb2-5"><a href=""></a>    <span class="cf">return</span> image.addBands(amplitude)</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li>Transformação em <code>DataFrame</code></li>
+</ul>
+<div class="sourceCode" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href=""></a><span class="kw">def</span> ee_to_pandas(imagem, geometria, bandas, scale):</span>
+<span id="cb3-2"><a href=""></a>    imagem <span class="op">=</span> imagem.addBands(ee.Image.pixelLonLat())</span>
+<span id="cb3-3"><a href=""></a>    </span>
+<span id="cb3-4"><a href=""></a>    coordenadas <span class="op">=</span> imagem.select([<span class="st">"longitude"</span>,<span class="st">"latitude"</span>] <span class="op">+</span> bandas)<span class="op">\</span></span>
+<span id="cb3-5"><a href=""></a>        .reduceRegion(reducer<span class="op">=</span>ee.Reducer.toList(),</span>
+<span id="cb3-6"><a href=""></a>                     geometry<span class="op">=</span>geometria,</span>
+<span id="cb3-7"><a href=""></a>                     scale<span class="op">=</span>scale,</span>
+<span id="cb3-8"><a href=""></a>                     bestEffort<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb3-9"><a href=""></a>    </span>
+<span id="cb3-10"><a href=""></a>    coordenadas <span class="op">=</span> coordenadas.getInfo()</span>
+<span id="cb3-11"><a href=""></a>    </span>
+<span id="cb3-12"><a href=""></a>    <span class="cf">return</span> pd.DataFrame.from_dict(coordenadas)</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="processamento-2" class="slide level2">
+<h2>Processamento</h2>
+<ul>
+<li>É aplicada a padronização das imagens enquanto em formato de <em>dataset</em></li>
+</ul>
+<div id="2ef6e828" class="cell" data-execution_count="2">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="presentation_files/figure-revealjs/cell-3-output-1.png" class="quarto-figure quarto-figure-center" width="1170" height="400"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="análise" class="slide level2">
+<h2>Análise</h2>
+<ul>
+<li>Com uma imagem <code>.tif</code> representando a série temporal de imagens, a técnica de envelope espectral pode ser aplicada pixel à pixel por meio da biblioteca <code>RPy2</code>, extraindo a função <code>specenv</code> do pacote <code>{astsa}</code> para <em>R</em></li>
+<li>O mesmo píxel em diferentes bandas representa momentos diferentes cronologicamente ordenados, formando um sinal temporal para cada um deles</li>
+<li>Para a função do envelope espectral do pacote, é fornecido um vetor de mapeamento <span class="math inline">\(G = (x, |x|, x^2)\)</span></li>
+<li>Sendo assim, o envelope espectral pode auxiliar no segregação das frequências predominante no sinal enquanto no domínio da frequência</li>
+<li>Os coeficientes são escolhidos com base na frequência mais expressiva para o cálculo de uma transformação otimizada</li>
+</ul>
+</section>
+<section id="análise-1" class="slide level2">
+<h2>Análise</h2>
+<div class="columns">
+<div class="column" style="width:40%;">
+<ul>
+<li>Sendo <span class="math inline">\(\beta\)</span> o autovetor equivalente para a frequência ótima <span class="math inline">\(w\)</span>, têm-se que <span class="math inline">\(\hat{\beta}(w) = (\beta_1, \beta_2, \beta_3)\)</span>.</li>
+<li>Neste caso, a transformação ótima vai ser expressada por <span class="math inline">\(g(x) = \beta_1x+\beta_2|x|+\beta_3x^2\)</span></li>
+</ul>
+</div><div class="column" style="width:60%;">
+<div class="sourceCode" id="cb4"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href=""></a><span class="co"># com RPy2, função de specenv para Python</span></span>
+<span id="cb4-2"><a href=""></a>rpy2.robjects.numpy2ri.activate()</span>
+<span id="cb4-3"><a href=""></a>pandas2ri.activate()</span>
+<span id="cb4-4"><a href=""></a></span>
+<span id="cb4-5"><a href=""></a>astsa <span class="op">=</span> importr(<span class="st">'astsa'</span>)</span>
+<span id="cb4-6"><a href=""></a>base <span class="op">=</span> importr(<span class="st">'base'</span>)</span>
+<span id="cb4-7"><a href=""></a>stats <span class="op">=</span> importr(<span class="st">'stats'</span>)</span>
+<span id="cb4-8"><a href=""></a></span>
+<span id="cb4-9"><a href=""></a><span class="kw">def</span> optimize(x, <span class="op">*</span>args):</span>
+<span id="cb4-10"><a href=""></a>    <span class="cf">if</span> <span class="bu">type</span>(x) <span class="op">==</span> pd.core.series.Series:</span>
+<span id="cb4-11"><a href=""></a>        x <span class="op">=</span> np.array(x)</span>
+<span id="cb4-12"><a href=""></a>    arr <span class="op">=</span> <span class="bu">list</span>(x.flatten())</span>
+<span id="cb4-13"><a href=""></a>    arrays <span class="op">=</span> [arr] <span class="op">+</span> [<span class="bu">list</span>(i(arr)) <span class="cf">for</span> i <span class="kw">in</span> args]</span>
+<span id="cb4-14"><a href=""></a>    mat <span class="op">=</span> np.array(arrays).T</span>
+<span id="cb4-15"><a href=""></a>    spec_env <span class="op">=</span> astsa.specenv(mat, real<span class="op">=</span><span class="va">True</span>, plot<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb4-16"><a href=""></a>    beta <span class="op">=</span> spec_env[spec_env[:,<span class="dv">1</span>]<span class="op">==</span><span class="bu">max</span>(spec_env[:,<span class="dv">1</span>]), <span class="dv">2</span>:].ravel()</span>
+<span id="cb4-17"><a href=""></a>    opt <span class="op">=</span> <span class="kw">lambda</span> l: np.array([l] <span class="op">+</span> [<span class="bu">list</span>(k(l)) <span class="cf">for</span> k <span class="kw">in</span> args]).T <span class="op">*</span> beta</span>
+<span id="cb4-18"><a href=""></a>    <span class="cf">return</span> pd.Series(opt(arr).<span class="bu">sum</span>(axis<span class="op">=</span><span class="dv">1</span>)) </span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</section>
+<section id="resultados" class="slide level2">
+<h2>Resultados</h2>
+<ul>
+<li>Envelope espectral possui a capacidade de suavizar os sinais fornecidos à transformação</li>
+<li>O vetor de mapeamento utilizado ocasionada em matrizes singulares, dificuldade o tratamento de diversas áreas da série de imagens</li>
+</ul>
+<div id="0e9d01d5" class="cell" data-execution_count="3">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="presentation_files/figure-revealjs/cell-4-output-1.png" class="quarto-figure quarto-figure-center" width="1170" height="400"></p>
+</figure>
+</div>
+</div>
+</div>
 <div class="quarto-auto-generated-content">
+<p><img src="figs/logo_ict.png" class="slide-logo"></p>
 <div class="footer footer-default">
 
+</div>
+</div>
+<div class="reveal-header">
+<div class="header-logo">
+<img data-src="figs/logo_fapesp.png">
+</div>
+<div class="sc-title">
+<p> </p>
+</div>
+<div class="header-text">
+<p>Projeto Temático FAPESP</p>
+</div>
+<div class="sb-title">
+<p> </p>
 </div>
 </div>
 </section>
@@ -409,7 +648,7 @@ Rogério Galante Negri
         progress: true,
 
         // Display the page number of the current slide
-        slideNumber: false,
+        slideNumber: 'c/t',
 
         // 'all', 'print', or 'speaker'
         showSlideNumber: 'all',

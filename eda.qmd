@@ -87,5 +87,42 @@ for i in range(1,32):
 ```
 
 ```{python}
+test = scaled\
+    .drop(['latitude','longitude'], axis=1)\
+    .iloc[778,:]\
+    .values
+
+test_specenv = pkg.optimize(test, np.abs, np.square).values
+
+sbn.lineplot(
+    pd.DataFrame(
+        {'original': test, 'opt': test_specenv}
+    )
+)
+```
+
+```{python}
+def call_func(x):
+    try:
+        res = pkg.optimize(x, np.abs, np.square)
+    except:
+        res = pd.Series(len(x)*[dummy_value])
+    return res
+
+optimized = scaled\
+    .drop(['latitude','longitude'], axis=1)\
+    .apply(call_func, axis=1)\
+    .join(coords)
+```
+
+
+```{python}
+col_names = optimized.drop(['latitude','longitude'], axis=1).columns
+
+save.save_tiff_from_df(optimized, col_names, dummy_value, r"assets/optimized.tif", "EPSG:4326")
+```
+
+
+```{python}
 
 ```
