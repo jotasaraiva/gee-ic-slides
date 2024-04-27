@@ -13,9 +13,6 @@ format:
 author: 
   - name: João Pedro Melani Saraiva
     affiliations:
-      - ref: unesp 
-  - name: Rogério Galante Negri
-    affiliations:
       - ref: unesp
 affiliations: 
   - id: unesp
@@ -23,12 +20,51 @@ affiliations:
     name: Dep. de Engenharia Ambiental - ICT-Unesp
 filters: 
   - reveal-header
+bibliography: references.bib
 ---
 
 ```{python}
+import ee
+import geemap
 from pkg import pkg
 import inspect
 import matplotlib.pyplot as plt
+```
+
+```{python}
+try:
+    ee.Initialize()
+except:
+    ee.Authenticate()
+    ee.Initialize()
+
+coordenadas = "-48.534679,-22.508117,-48.50481,-22.538879"
+x1, y1, x2, y2 = coordenadas.split(",")
+
+datas = "2020-01-01,2020-12-31"
+inicio, fim = datas.split(",")
+escala = 30
+dummy_value = 99999
+
+geom = ee.Geometry.Polygon([[[float(x1),float(y2)],
+                             [float(x2),float(y2)],
+                             [float(x2),float(y1)],
+                             [float(x1),float(y1)],
+                             [float(x1),float(y2)]]])
+
+
+sentinel1 = ee.ImageCollection('COPERNICUS/S1_GRD')\
+    .filterBounds(geom)\
+    .filterDate(inicio,fim)\
+    .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))\
+    .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VH'))\
+    .filter(ee.Filter.eq('instrumentMode', 'IW'))
+    
+v_emit_asc = sentinel1.filter(ee.Filter.eq('orbitProperties_pass', 'ASCENDING'))
+v_emit_desc = sentinel1.filter(ee.Filter.eq('orbitProperties_pass', 'DESCENDING'))
+
+image = ee.Image(dummy_value).blend(v_emit_desc.map(pkg.add_amplitude).select('amplitude').toBands())
+image_names = image.bandNames().getInfo()
 ```
 
 ## Introdução
@@ -44,7 +80,7 @@ import matplotlib.pyplot as plt
 - Utilizando Earth Engine API para Python
 - Filtrando por área de interesse (ROI) e intervalo de tempo
 - Estudo de caso: Intervalo de 12 meses, represa de Barra Bonita
-- Seleção das bandas de visada vertical e visada horizontal para o cálculo da amplitude
+- Seleção das bandas de polarização vertical e horizontal para o cálculo da amplitude
 
 ## Coleta de dados
 
@@ -82,7 +118,7 @@ image_names = image.bandNames().getInfo()
 
 ## Processamento
 
-- Cálculo e extração de amplitude (distância euclidiana entre **VV** e **VH**)
+- Cálculo de amplitude (distância euclidiana entre **VV** e **VH**)
 - Extração da banda de amplitude da coleção de imagens, criando uma única imagem
 - Transformação para `DataFrame` em formato *long* das bandas da imagem
 
@@ -117,34 +153,59 @@ def ee_to_pandas(imagem, geometria, bandas, scale):
 ```
 ## Processamento
 
-- É aplicada a padronização das imagens enquanto em formato de *dataset*
+```{python}
+#| label: fig-composicao
+#| fig-cap: Composição RGB (VV, VH, VV/VH)
+latitude_central = (float(x1)+float(x2))/2
+longitude_central = (float(y1)+float(y2))/2
+
+my_map = geemap.Map(center=(longitude_central, latitude_central), zoom=14, height="450px")
+my_map.addLayer(geom)
+
+rgb = ee.Image.rgb(
+    v_emit_desc.mean().select('VV'),
+    v_emit_desc.mean().select('VH'),
+    v_emit_desc.mean().select('VV').divide(v_emit_desc.mean().select('VH'))
+).clip(geom)
+
+my_map.addLayer(rgb, {'min': [-25,-25,0], 'max': [0,0,2]})
+
+my_map
+```
+
+
+## Processamento
+
+- É aplicada a padronização, ou *Z-score*, das imagens com $z = \frac{x_i - \mu}{\sigma}$, sendo $\mu$ e $\sigma$ a média e o desvio padrão de todos os pixels de todas as imagens respectivamente
 
 ```{python}
 #| fig-align: center
+#| label: fig-standard
+#| fig-cap: Imagens padronizadas
 
-f = plt.figure(figsize=(15,15))
+f = plt.figure(figsize=(10,10))
 f.add_subplot(1,3, 1).set_title("Banda 1")
 pkg.show_tif('assets/scaled.tif', 1)
 f.add_subplot(1,3, 2).set_title("Banda 10")
 pkg.show_tif('assets/scaled.tif', 10)
-f.add_subplot(1,3, 3).set_title("Band 20")
+f.add_subplot(1,3, 3).set_title("Banda 20")
 pkg.show_tif('assets/scaled.tif', 20)
 ```
 
 ## Análise
 
-- Com uma imagem `.tif` representando a série temporal de imagens, a técnica de envelope espectral pode ser aplicada pixel à pixel por meio da biblioteca `RPy2`, extraindo a função `specenv` do pacote `{astsa}` para *R*
+- Com uma imagem `.tif` representando a série temporal de imagens, a técnica de envelope espectral pode ser aplicada pixel à pixel por meio da biblioteca `RPy2`, extraindo a função `specenv` do pacote `{astsa}` para *R* [@Shumway2000-aj]
 - O mesmo píxel em diferentes bandas representa momentos diferentes cronologicamente ordenados, formando um sinal temporal para cada um deles
 - Para a função do envelope espectral do pacote, é fornecido um vetor de mapeamento $G = (x, |x|, x^2)$
 - Sendo assim, o envelope espectral pode auxiliar no segregação das frequências predominante no sinal enquanto no domínio da frequência
-- Os coeficientes são escolhidos com base na frequência mais expressiva para o cálculo de uma transformação otimizada
+- Os coeficientes são escolhidos com base na frequência mais expressiva para o cálculo de uma transformação otimizada [@ufprVII8]
 
 ## Análise
 
 :::: {.columns}
 
 ::: {.column width="40%"}
-- Sendo $\beta$ o autovetor equivalente para a frequência ótima $w$, têm-se que $\hat{\beta}(w) = (\beta_1, \beta_2, \beta_3)$.
+- Sendo $\beta$ o autovetor equivalente para a frequência $w$, têm-se que $\hat{\beta}(w) = (\beta_1, \beta_2, \beta_3)$.
 - Neste caso, a transformação ótima vai ser expressada por $g(x) = \beta_1x+\beta_2|x|+\beta_3x^2$
 :::
 
@@ -175,21 +236,20 @@ def optimize(x, *args):
 
 ## Resultados
 - Envelope espectral possui a capacidade de suavizar os sinais fornecidos à transformação
-- O vetor de mapeamento utilizado ocasionada em matrizes singulares, dificuldade o tratamento de diversas áreas da série de imagens
+- Alguns pixels são incapazes de ser suavizados pelo método, sendo substituídos por valores *dummy*
 
 ```{python}
 #| fig-align: center
+#| fig-cap: Imagens suavizadas pelo Envelope Espectral
+#| label: fig-specenv
 
-f = plt.figure(figsize=(15,15))
+f = plt.figure(figsize=(10,10))
 f.add_subplot(1,3, 1).set_title("Banda 1")
 pkg.show_tif('assets/optimized.tif', 1)
 f.add_subplot(1,3, 2).set_title("Banda 10")
 pkg.show_tif('assets/optimized.tif', 10)
-f.add_subplot(1,3, 3).set_title("Band 20")
+f.add_subplot(1,3, 3).set_title("Banda 20")
 pkg.show_tif('assets/optimized.tif', 20)
 ```
 
- 
-
-
-
+## Referências

@@ -6,6 +6,7 @@ author: João Pedro Melani Saraiva
 
 ```{python}
 import ee
+import geemap
 from pkg import pkg
 from pkg import save
 import pandas as pd
@@ -53,6 +54,23 @@ image_names = image.bandNames().getInfo()
 df = pkg.ee_to_pandas(image, geom, image_names, scale=10)
 ```
 
+```{python}
+latitude_central = (float(x1)+float(x2))/2
+longitude_central = (float(y1)+float(y2))/2
+
+my_map = geemap.Map(center=(longitude_central, latitude_central), zoom=13)
+my_map.addLayer(geom)
+
+rgb = ee.Image.rgb(
+    v_emit_desc.mean().select('VV'),
+    v_emit_desc.mean().select('VH'),
+    v_emit_desc.mean().select('VV').divide(v_emit_desc.mean().select('VH'))
+).clip(geom)
+
+my_map.addLayer(rgb, {'min': [-25,-25,0], 'max': [0,0,2]})
+
+my_map
+```
 
 ```{python}
 renamed = pkg.rename_geodf(df)
@@ -89,7 +107,7 @@ for i in range(1,32):
 ```{python}
 test = scaled\
     .drop(['latitude','longitude'], axis=1)\
-    .iloc[778,:]\
+    .iloc[779,:]\
     .values
 
 test_specenv = pkg.optimize(test, np.abs, np.square).values
@@ -106,7 +124,7 @@ def call_func(x):
     try:
         res = pkg.optimize(x, np.abs, np.square)
     except:
-        res = pd.Series(len(x)*[dummy_value])
+        res = pd.Series(len(x)*[-1])
     return res
 
 optimized = scaled\
@@ -124,5 +142,5 @@ save.save_tiff_from_df(optimized, col_names, dummy_value, r"assets/optimized.tif
 
 
 ```{python}
-
+pkg.show_tif("assets/optimized.tif", 1)
 ```
