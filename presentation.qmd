@@ -10,6 +10,7 @@ format:
         header: Projeto Temático FAPESP
         header-logo: figs/logo_fapesp.png
         logo: figs/logo_ict.png
+        dpi: 300
 author: 
   - name: João Pedro Melani Saraiva
     affiliations:
@@ -70,16 +71,23 @@ image_names = image.bandNames().getInfo()
 ## Introdução
 
 - Monitoramento ambiental e mudanças na superfície terrestre
+
 - Sensoriamento Remoto
+
 - Séries Temporais de Imagens de Satélites
+
 - SAR (Synthetic Aperture Radar)
+
 - Motivação: Imagens SAR são dados *raster* ruidosos, passíveis de análise espectral
 
 ## Coleta de dados
 
 - Utilizando Earth Engine API para Python
+
 - Filtrando por área de interesse (ROI) e intervalo de tempo
+
 - Estudo de caso: Intervalo de 12 meses, represa de Barra Bonita
+
 - Seleção das bandas de polarização vertical e horizontal para o cálculo da amplitude
 
 ## Coleta de dados
@@ -119,7 +127,9 @@ image_names = image.bandNames().getInfo()
 ## Processamento
 
 - Cálculo de amplitude (distância euclidiana entre **VV** e **VH**)
+
 - Extração da banda de amplitude da coleção de imagens, criando uma única imagem
+
 - Transformação para `DataFrame` em formato *long* das bandas da imagem
 
 $$
@@ -173,7 +183,6 @@ my_map.addLayer(rgb, {'min': [-25,-25,0], 'max': [0,0,2]})
 my_map
 ```
 
-
 ## Processamento
 
 - É aplicada a padronização, ou *Z-score*, das imagens com $z = \frac{x_i - \mu}{\sigma}$, sendo $\mu$ e $\sigma$ a média e o desvio padrão de todos os pixels de todas as imagens respectivamente
@@ -195,9 +204,13 @@ pkg.show_tif('assets/scaled.tif', 20)
 ## Análise
 
 - Com uma imagem `.tif` representando a série temporal de imagens, a técnica de envelope espectral pode ser aplicada pixel à pixel por meio da biblioteca `RPy2`, extraindo a função `specenv` do pacote `{astsa}` para *R* [@Shumway2000-aj]
+
 - O mesmo píxel em diferentes bandas representa momentos diferentes cronologicamente ordenados, formando um sinal temporal para cada um deles
+
 - Para a função do envelope espectral do pacote, é fornecido um vetor de mapeamento $G = (x, |x|, x^2)$
+
 - Sendo assim, o envelope espectral pode auxiliar no segregação das frequências predominante no sinal enquanto no domínio da frequência
+
 - Os coeficientes são escolhidos com base na frequência mais expressiva para o cálculo de uma transformação otimizada [@ufprVII8]
 
 ## Análise
