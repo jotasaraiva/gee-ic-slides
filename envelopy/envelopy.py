@@ -1,154 +1,66 @@
----
-title: EDA para Projeto de Iniciação Científica
-description: Desenvolvimento de medidas para caracterização de mudanças em séries temporais de imagens SAR com apoio de Aprendizado de Máquina
-author: João Pedro Melani Saraiva
----
+"""
+Adaptation of R's spectrum.R spectral analysis functions, used in Chapters 14+.
 
-```{python}
-import ee
-import geemap
-from pkg import pkg
-from pkg import save
-import pandas as pd
+Based on version at https://github.com/SurajGupta/r-source/blob/master/src/library/stats/R/spectrum.R .
+""" 
+
 import numpy as np
-import seaborn as sbn
-import matplotlib.pyplot as plt
 from scipy import stats, signal, fft
-```
+from statsmodels.regression.linear_model import yule_walker
+from scipy import linalg
+import matplotlib.pyplot as plt
 
 
-```{python}
-try:
-    ee.Initialize()
-except:
-    ee.Authenticate()
-    ee.Initialize()
-
-coordenadas = "-48.534679,-22.508117,-48.50481,-22.538879"
-x1, y1, x2, y2 = coordenadas.split(",")
-
-datas = "2020-01-01,2020-12-31"
-inicio, fim = datas.split(",")
-escala = 30
-dummy_value = 99999
-
-geom = ee.Geometry.Polygon([[[float(x1),float(y2)],
-                             [float(x2),float(y2)],
-                             [float(x2),float(y1)],
-                             [float(x1),float(y1)],
-                             [float(x1),float(y2)]]])
-
-
-sentinel1 = ee.ImageCollection('COPERNICUS/S1_GRD')\
-    .filterBounds(geom)\
-    .filterDate(inicio,fim)\
-    .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))\
-    .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VH'))\
-    .filter(ee.Filter.eq('instrumentMode', 'IW'))
+def spec_taper(x, p=0.1):
+    """
+    Computes a tapered version of x, with tapering p.
     
-v_emit_asc = sentinel1.filter(ee.Filter.eq('orbitProperties_pass', 'ASCENDING'))
-v_emit_desc = sentinel1.filter(ee.Filter.eq('orbitProperties_pass', 'DESCENDING'))
+    Adapted from R's stats::spec.taper.
+    """
+    
+    p = np.r_[p]
+    assert np.all((p >= 0) & (p < 0.5)), "'p' must be between 0 and 0.5"
+    
+    x = np.r_[x].astype('float64')
+    original_shape = x.shape
+    
+    assert len(original_shape) <= 2, "'x' must have at most 2 dimensions"
+    while len(x.shape) < 2:
+        x = np.expand_dims(x, axis=1)
+    
+    nr, nc = x.shape
+    if len(p) == 1:
+        p = p * np.ones(nc)
+    else:
+        assert len(p) == nc, "length of 'p' must be 1 or equal the number of columns of 'x'"
+    
+    for i in range(nc):
+        m = int(np.floor(nr * p[i]))
+        if m == 0:
+            continue
+        w = 0.5 * (1 - np.cos(np.pi * np.arange(1, 2 * m, step=2)/(2 * m)))
+        x[:, i] = np.r_[w, np.ones(nr - 2 * m), w[::-1]] * x[:, i]
+    
+    x = np.reshape(x, original_shape)
+    return x
 
-image = ee.Image(dummy_value).blend(v_emit_desc.map(pkg.add_amplitude).select('amplitude').toBands())
-image_names = image.bandNames().getInfo()
+def spec_ci(df, coverage=0.95):
+    """
+    Computes the confidence interval for a spectral fit, based on the number of degrees of freedom.
+    
+    Adapted from R's stats::plot.spec.
+    """
+    
+    assert coverage >= 0 and coverage < 1, "coverage probability out of range [0, 1)"
+    
+    tail = 1 - coverage
+    
+    phi = stats.chi2.cdf(x=df, df=df)
+    upper_quantile = 1 - tail * (1 - phi)
+    lower_quantile = tail * phi
+    
+    return df / stats.chi2.ppf([upper_quantile, lower_quantile], df=df)
 
-df = pkg.ee_to_pandas(image, geom, image_names, scale=10)
-```
-
-```{python}
-latitude_central = (float(x1)+float(x2))/2
-longitude_central = (float(y1)+float(y2))/2
-
-my_map = geemap.Map(center=(longitude_central, latitude_central), zoom=13)
-my_map.addLayer(geom)
-
-rgb = ee.Image.rgb(
-    v_emit_desc.mean().select('VV'),
-    v_emit_desc.mean().select('VH'),
-    v_emit_desc.mean().select('VV').divide(v_emit_desc.mean().select('VH'))
-).clip(geom)
-
-my_map.addLayer(rgb, {'min': [-25,-25,0], 'max': [0,0,2]})
-
-my_map
-```
-
-```{python}
-renamed = pkg.rename_geodf(df)
-reordered = renamed.reindex(sorted(renamed.columns), axis=1) 
-```
-
-
-```{python}
-def scale_all(df):
-    names = df.columns
-    mat = df.to_numpy()
-    scaled_mat = (mat - np.mean(mat)) / np.std(mat)
-    return pd.DataFrame(scaled_mat, columns=names)
-
-coords = reordered.loc[:, ['latitude','longitude']]
-
-scaled = scale_all(reordered.drop(['latitude','longitude'], axis=1)).join(coords)
-```
-
-
-```{python}
-col_names = scaled.drop(['latitude','longitude'], axis=1).columns
-
-save.save_tiff_from_df(scaled, col_names, dummy_value, r"assets/scaled.tif", "EPSG:4326")
-```
-
-```{python}
-for i in range(1,32):
-    print(i)
-    pkg.show_tif(r"assets/scaled.tif", i)
-    plt.show()
-```
-
-```{python}
-test = scaled\
-    .drop(['latitude','longitude'], axis=1)\
-    .iloc[779,:]\
-    .values
-
-test_specenv = pkg.optimize(test, np.abs, np.square).values
-
-sbn.lineplot(
-    pd.DataFrame(
-        {'original': test, 'opt': test_specenv}
-    )
-)
-```
-
-```{python}
-def call_func(x):
-    try:
-        res = pkg.optimize(x, np.abs, np.square)
-    except:
-        res = pd.Series(len(x)*[-1])
-    return res
-
-optimized = scaled\
-    .drop(['latitude','longitude'], axis=1)\
-    .apply(call_func, axis=1)\
-    .join(coords)
-```
-
-
-```{python}
-col_names = optimized.drop(['latitude','longitude'], axis=1).columns
-
-save.save_tiff_from_df(optimized, col_names, dummy_value, r"assets/optimized.tif", "EPSG:4326")
-```
-
-
-```{python}
-pkg.show_tif("assets/optimized.tif", 1)
-```
-
-## Teste de `spectrum.R` para Python
-
-```{python}
 def spec_pgram(x, xfreq=1, spans=None, kernel=None, taper=0.1, pad=0, fast=True, demean=False, detrend=True, 
                plot=True, **kwargs):
     """
@@ -163,6 +75,7 @@ def spec_pgram(x, xfreq=1, spans=None, kernel=None, taper=0.1, pad=0, fast=True,
     Implemented to ensure compatibility with R's spectral functions, as opposed to reusing scipy's periodogram.
     
     Adapted from R's stats::spec.pgram.
+    Altered to resemble astsa::mvspec.
     """
     def daniell_window_modified(m):
         """ Single-pass modified Daniell kernel window.
@@ -295,9 +208,12 @@ def spec_pgram(x, xfreq=1, spans=None, kernel=None, taper=0.1, pad=0, fast=True,
     spec = spec / u2
     spec = spec.squeeze()
     
+    fxx = pgram.transpose()
+    
     results = {
         'freq': freq,
         'spec': spec,
+        'fxx': fxx,
         'coh': coh,
         'phase': phase,
         'kernel': kernel,
@@ -316,4 +232,110 @@ def spec_pgram(x, xfreq=1, spans=None, kernel=None, taper=0.1, pad=0, fast=True,
         plot_spec(results, coverage=0.95, **kwargs)
     
     return results
-```
+
+def spec_ar(x, x_freq=1, n_freq=500, order_max=None, plot=True, **kwargs):
+    x = np.r_[x]
+    N = len(x)
+    if order_max is None:
+        order_max = min(N - 1, int(np.floor(10 * np.log10(N))))
+
+    # Use Yule-Walker to find best AR model via AIC
+    def aic(sigma2, df_model, nobs):
+        return np.log(sigma2) + 2 * (1 + df_model) / nobs
+    
+    best_results = None
+    
+    for lag in range(order_max+1):
+        ar, sigma = yule_walker(x, order=lag, method='mle')
+        model_aic = aic(sigma2=sigma**2, df_model=lag, nobs=N-lag)
+        if best_results is None or model_aic < best_results['aic']:
+            best_results = {
+                'aic': model_aic,
+                'order': lag,
+                'ar': ar,
+                'sigma2': sigma**2
+            }
+        
+    order = best_results['order']
+    freq = np.arange(0, n_freq) / (2 * (n_freq - 1))
+      
+    if order >= 1:
+        ar, sigma2 = best_results['ar'], best_results['sigma2']
+    
+        outer_xy = np.outer(freq, np.arange(1, order+1))
+        cs = np.cos(2 * np.pi * outer_xy) @ ar
+        sn = np.sin(2 * np.pi * outer_xy) @ ar
+
+        spec = sigma2 / (x_freq*((1 - cs)**2 + sn**2))
+        
+    else:
+        sigma2 = best_results['sigma2']
+        spec = (sigma2 / x_freq) * np.ones(len(freq))
+    
+    results = {
+        'freq': freq,
+        'spec': spec,
+        'coh': None,
+        'phase': None,
+        'n.used': len(x),
+        'method': 'AR(' + str(order) + ') spectrum'
+    } 
+    
+    if plot:
+        plot_spec(results, coverage=None, **kwargs)
+    
+    return results
+
+def plot_spec(spec_res, coverage=None, ax=None, title=None):
+    """Convenience plotting method, also includes confidence cross in the same style as R.
+    
+    Note that the location of the cross is irrelevant; only width and height matter."""
+    f, Pxx = spec_res['freq'], spec_res['spec']
+    
+    if coverage is not None:
+        ci = spec_ci(spec_res['df'], coverage=coverage)
+        conf_x = (max(spec_res['freq']) - spec_res['bandwidth']) + np.r_[-0.5, 0.5] * spec_res['bandwidth']
+        conf_y = max(spec_res['spec']) / ci[1]
+
+    if ax is None:
+        ax = plt.gca()
+    
+    ax.plot(f, Pxx, color='C0')
+    ax.set_xlabel('Frequency')
+    ax.set_ylabel('Log Spectrum')
+    ax.set_yscale('log')
+    if coverage is not None:
+        ax.plot(np.mean(conf_x) * np.r_[1, 1], conf_y * ci, color='red')
+        ax.plot(conf_x, np.mean(conf_y) * np.r_[1, 1], color='red')
+
+    ax.set_title(spec_res['method'] if title is None else title)
+        
+def specenv(xdata, spans=None, kernel=None, taper=0,
+            pad=0, plot=False, **kwargs):
+  
+  """
+  Computes the Spectral Envelope as described in Time Series Analysis and 
+  Its Applications with R Examples and the R package ASTSA.
+  """  
+  
+  xspec = spec_pgram(xdata, spans=spans, kernel=kernel, taper=taper,
+                     plot=False)
+                    
+  fxxr = np.real(xspec['fxx'])
+  var = np.cov(xdata.T)
+  Q = linalg.fractional_matrix_power(var, -.5)
+  
+  num = xspec['n.used']
+  nfreq = xspec['freq'].shape[0]
+  specenv = np.zeros((nfreq, 1))
+  beta = np.zeros((nfreq, xdata.shape[1]))
+  
+  for k in range(0,nfreq):
+    ev, eg = np.linalg.eig(2 * (np.matmul(np.matmul(Q, fxxr[:,:,k]), Q))/num)
+    specenv[k] = ev[0]
+    b = np.matmul(Q, eg[:,0])
+    beta[k, ] = b/np.sqrt(np.sum(b**2))
+    
+  frequency = xspec['freq'].reshape((-1,1))
+  
+  return np.concatenate([frequency, specenv, beta], axis=1)
